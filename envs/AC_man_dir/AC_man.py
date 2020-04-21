@@ -1,7 +1,7 @@
 import numpy as np
 from gym import spaces
 import optimal_lqr_control
-from stable_baselines.common.env_checker import check_env
+#from stable_baselines.common.env_checker import check_env
 import gym
 import sys
 
@@ -171,7 +171,7 @@ if __name__ == "__main__":
     print(state)
     print(next_state.dtype)
     print(ac_env.observation_space.dtype)
-    check_env(ac_env, warn=True)
+    #check_env(ac_env, warn=True)
     print(ac_env.observable())
     ac_env.opt_action()
   

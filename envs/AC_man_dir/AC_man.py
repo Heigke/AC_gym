@@ -137,6 +137,7 @@ class Automatic_Control_Environment(gym.Env):
     def done(self):
         if self.nbr_steps == self.rollout_steps:
             return True
+        #elif np.max(self.state) > self.high
         else:
             return False
 

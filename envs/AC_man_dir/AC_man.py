@@ -61,6 +61,7 @@ class Automatic_Control_Environment(gym.Env):
 
     def new_obs(self):
         noise = np.random.normal(0,1,self.Y.shape)
+        
         new_Y = self.C@self.state #+ noise
         return new_Y
     def opt_action(self):
@@ -78,7 +79,7 @@ class Automatic_Control_Environment(gym.Env):
         reward = self.reward()
         self.nbr_steps += 1
 
-        next_Y = next_Y.squeeze()
+        next_Y = np.squeeze(next_Y,axis=1)
         next_Y = next_Y.astype('float32')
         #next_state = next_state.squeeze()
         #next_state = next_state.astype('float32')
@@ -148,19 +149,26 @@ if __name__ == "__main__":
     # R = np.array([[1,0],[0,1]])
     # N = np.array([[0,0],[0,0]])
     # initial_value = np.array([[0.1],[0.1]])
-    A = np.array([[0.2,0.3,0.4],[0.1,-0.3,0.4],[0.2,0.5,0.6]])
-    B = np.array([[1,0,0],[0,1,0],[0,0,1]])
-    C = np.array([[1,1,0],[1,0,0]])
-    Q = np.array([[1,0,0],[0,1,0],[0,0,1]])
-    R = np.array([[1,0,0],[0,1,0],[0,0,1]])
-    N = np.array([[0,0,0],[0,0,0],[0,0,0]])
-    initial_value = np.array([[0.8],[0.8],[0.8]])
+    # A = np.array([[0.2,0.3,0.4],[0.1,-0.3,0.4],[0.2,0.5,0.6]])
+    # B = np.array([[1,0,0],[0,1,0],[0,0,1]])
+    # C = np.array([[1,1,0],[1,0,0]])
+    # Q = np.array([[1,0,0],[0,1,0],[0,0,1]])
+    # R = np.array([[1,0,0],[0,1,0],[0,0,1]])
+    # N = np.array([[0,0,0],[0,0,0],[0,0,0]])
+    # initial_value = np.array([[0.8],[0.8],[0.8]])
+    A = np.array([[1]])
+    B = np.array([[1]])
+    C = np.array([[1]])
+    Q = np.array([[1]])
+    R = np.array([[1]])
+    N = np.array([[0]])
+    initial_value = np.array([[0.8]])
     ac_env = Automatic_Control_Environment(A,B,C,Q,R,N,initial_value)
     print("obs space: "+str(ac_env.observation_space.shape))
     print("act space: "+str(ac_env.action_space.shape))
     state = ac_env.reset()
     optimal_action = ac_env.lqr_optimal.action(initial_value)
-    action = np.array([0.1,0.1,0.1])
+    action = np.array([0.1])
     next_state, reward, done, _ = ac_env.step(action)
     print("new state")
     print(next_state)

@@ -5,12 +5,13 @@ import optimal_lqr_control
 import gym
 import sys
 
-A2 = np.array([[0.8,0],[0,0.8]])
-B2 = np.array([[1,0],[0,1]])
-Q2 = np.array([[1,0],[0,1]])
-R2 = np.array([[1,0],[0,1]])
-N2 = np.array([[0,0],[0,0]])
-initial_value2 = np.array([[0.8],[0.8]])
+A2 = np.array([[1]])
+B2 = np.array([[1]])
+C2 = np.array([[1]])
+Q2 = np.array([[1]])
+R2 = np.array([[1]])
+N2 = np.array([[0]])
+initial_value2 = np.array([[0.8]])
 class Automatic_Control_Environment(gym.Env):
     """ ***A simle automatic control environment***
     by Niklas Kotarsky and Eric Bergvall
@@ -24,7 +25,7 @@ class Automatic_Control_Environment(gym.Env):
     
 
     metadata = {'render.modes': ['human']}
-    def __init__(self,A=A2,B=B2,C=0,Q=Q2,R=R2,N=N2,initial_value=initial_value2, reset_rnd = True, noise_matrix=0,horizon=100):
+    def __init__(self,A=A2,B=B2,C=C2,Q=Q2,R=R2,N=N2,initial_value=initial_value2, reset_rnd = False, noise_matrix=0,horizon=100):
         super(Automatic_Control_Environment, self).__init__()
         self.A = A
         self.B = B

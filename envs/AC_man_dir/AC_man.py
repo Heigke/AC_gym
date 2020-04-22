@@ -50,7 +50,7 @@ class Automatic_Control_Environment(gym.Env):
         self.action_space = spaces.Box(low=-high_vector_act, high=high_vector_act, dtype=np.float32)
         self.observation_space = spaces.Box(low=-high_vector_obs, high=high_vector_obs, dtype=np.float32)
         
-        self.rollout_steps = 2048
+        self.rollout_steps = 19
         self.lqr_optimal = optimal_lqr_control.Lqr(A,B,Q,R,N,horizon)
         
 

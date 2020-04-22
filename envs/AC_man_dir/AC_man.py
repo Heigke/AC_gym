@@ -49,7 +49,8 @@ class Automatic_Control_Environment(gym.Env):
         high_vector_obs = self.high*np.ones(self.Y.shape[0])
         self.action_space = spaces.Box(low=-high_vector_act, high=high_vector_act, dtype=np.float32)
         self.observation_space = spaces.Box(low=-high_vector_obs, high=high_vector_obs, dtype=np.float32)
-
+        
+        self.rollout_steps = 2048
         self.lqr_optimal = optimal_lqr_control.Lqr(A,B,Q,R,N,horizon)
         
 
@@ -133,6 +134,9 @@ class Automatic_Control_Environment(gym.Env):
         return -current_reward[0][0]
 
     def done(self):
+        if self.nbr_steps == self.rollout_steps:
+            return True
+        else:
             return False
 
 

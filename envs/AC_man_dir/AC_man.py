@@ -25,7 +25,7 @@ class Automatic_Control_Environment(gym.Env):
     
 
     metadata = {'render.modes': ['human']}
-    def __init__(self,A=A2,B=B2,C=C2,Q=Q2,R=R2,N=N2,initial_value=initial_value2, reset_rnd = False, noise_matrix=0,horizon=100):
+    def __init__(self,A=A2,B=B2,C=C2,Q=Q2,R=R2,N=N2,initial_value=initial_value2, reset_rnd = True, noise_matrix=0,horizon=100):
         super(Automatic_Control_Environment, self).__init__()
         self.A = A
         self.B = B
@@ -66,6 +66,7 @@ class Automatic_Control_Environment(gym.Env):
         return new_Y
     def opt_action(self):
         optimal_action = self.lqr_optimal.action(self.state)
+        optimal_action = np.squeeze(optimal_action,axis=1)
         return optimal_action
 
     def step(self, action):
@@ -168,9 +169,9 @@ if __name__ == "__main__":
     print("obs space: "+str(ac_env.observation_space.shape))
     print("act space: "+str(ac_env.action_space.shape))
     state = ac_env.reset()
-    optimal_action = ac_env.lqr_optimal.action(initial_value)
-    action = np.array([0.1])
-    next_state, reward, done, _ = ac_env.step(action)
+    optimal_action = ac_env.opt_action()
+    #action = np.array([0.1])
+    next_state, reward, done, _ = ac_env.step(optimal_action)
     print("new state")
     print(next_state)
     print("rew")

@@ -5,13 +5,13 @@ import optimal_lqr_control
 import gym
 import sys
 
-A2 = np.array([[1]])
-B2 = np.array([[1]])
-C2 = np.array([[1]])
-Q2 = np.array([[1]])
-R2 = np.array([[1]])
-N2 = np.array([[0]])
-initial_value2 = np.array([[0.8]])
+A2 = np.array([[0.2,0.3,0.4],[0.1,-0.3,0.4],[0.2,0.5,0.6]])
+B2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
+C2 = np.array([[1,1,0],[1,0,0]])
+Q2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
+R2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
+N2 = np.array([[0,0,0],[0,0,0],[0,0,0]])
+initial_value2 = np.array([[0.8],[0.8],[0.8]])
 class Automatic_Control_Environment(gym.Env):
     """ ***A simle automatic control environment***
     by Niklas Kotarsky and Eric Bergvall

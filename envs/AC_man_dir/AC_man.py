@@ -4,6 +4,9 @@ import optimal_lqr_control
 #from stable_baselines.common.env_checker import check_env
 import gym
 import sys
+"""
+Settings for linear quadratic regulator
+"""
 
 A2 = np.array([[0,0,1],[0,1,0],[1,0,0]])
 B2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
@@ -12,6 +15,8 @@ Q2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
 R2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
 N2 = np.array([[0,0,0],[0,0,0],[0,0,0]])
 initial_value2 = np.array([[1],[1],[1]])
+reset_rnd2 = True
+nonlin_lambda2 = lambda x: 0.2*np.sin(x)
 class Automatic_Control_Environment(gym.Env):
     """ ***A simple automatic control environment***
     by Niklas Kotarsky and Eric Bergvall
@@ -25,7 +30,7 @@ class Automatic_Control_Environment(gym.Env):
     
 
     metadata = {'render.modes': ['human']}
-    def __init__(self,A=A2,B=B2,C=C2,Q=Q2,R=R2,N=N2,initial_value=initial_value2, reset_rnd = True, noise_matrix=0,horizon=100):
+    def __init__(self,A=A2,B=B2,C=C2,Q=Q2,R=R2,N=N2,initial_value=initial_value2, reset_rnd = reset_rnd2, nonlin_lambda = nonlin_lambda2, noise_matrix=0,horizon=100):
         super(Automatic_Control_Environment, self).__init__()
         self.A = A
         self.B = B
@@ -49,6 +54,8 @@ class Automatic_Control_Environment(gym.Env):
         high_vector_obs = self.high*np.ones(self.Y.shape[0])
         self.action_space = spaces.Box(low=-high_vector_act, high=high_vector_act, dtype=np.float32)
         self.observation_space = spaces.Box(low=-high_vector_obs, high=high_vector_obs, dtype=np.float32)
+        self.nonlin_term = nonlin_lambda
+
         
         self.rollout_steps = 19
         self.lqr_optimal = optimal_lqr_control.Lqr(A,B,Q,R,N,horizon)
@@ -56,7 +63,9 @@ class Automatic_Control_Environment(gym.Env):
 
     def state_space_equation(self, action):
         noise = np.random.normal(0,1,self.state.shape)
-        new_state = self.A@self.state+self.B@action+self.noise_matrix*noise
+        #new_state = self.A@self.state+self.B@action+self.noise_matrix*noise
+        new_state = self.A@self.state+self.B@action+self.nonlin_term(self.state)+self.noise_matrix*noise
+        
         return new_state
 
     def new_obs(self):

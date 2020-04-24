@@ -5,23 +5,23 @@ import optimal_lqr_control
 import gym
 import sys
 
-A2 = np.array([[0.2,0.3,0.4],[0.1,-0.3,0.4],[0.2,0.5,0.6]])
+A2 = np.array([[0,0,1],[0,1,0],[1,0,0]])
 B2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
-C2 = np.array([[1,1,0],[1,0,0]])
+C2 = np.array([[0,1,0],[1,1,0]])
 Q2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
 R2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
 N2 = np.array([[0,0,0],[0,0,0],[0,0,0]])
-initial_value2 = np.array([[0.8],[0.8],[0.8]])
+initial_value2 = np.array([[1],[1],[1]])
 class Automatic_Control_Environment(gym.Env):
-    """ ***A simle automatic control environment***
+    """ ***A simple automatic control environment***
     by Niklas Kotarsky and Eric Bergvall
     
-    The system is described by x_t+1 = A*x_t + B*u_t + noise_matrix*noise
+    The system is described by x_t+1 = A*x_t + B*u_t + noise
     The observed system y_t+1 = C*x_t+1 + noise
     where x_t is a column vector with dimension N and A has dimension N x N
     u_t has dimension M and B then have dimension NxM 
     Noise has dimension N and noise_matrix has dimension NxN 
-    C has dimensions KxN and noise dimension K"""
+    C has dimensions KxN s.t. y has dimension K. Noise dimension K"""
     
 
     metadata = {'render.modes': ['human']}
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     # R = np.array([[1]])
     # N = np.array([[0]])
     # initial_value = np.array([[0.8]])
-    ac_env = Automatic_Control_Environment(A,B,C,Q,R,N,initial_value)
+    ac_env = Automatic_Control_Environment()
     print("obs space: "+str(ac_env.observation_space.shape))
     print("act space: "+str(ac_env.action_space.shape))
     state = ac_env.reset()

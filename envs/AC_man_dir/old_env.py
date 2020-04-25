@@ -4,25 +4,21 @@ import optimal_lqr_control
 #from stable_baselines.common.env_checker import check_env
 import gym
 import sys
-import matplotlib.pyplot as plt
-
 """
 Settings for linear quadratic regulator
 """
 
 A2 = np.array([[0,0,1,0,0],[0,1,0,0,0],[1,0,0,0,0],[0,0,0,1,0],[0,0,0,0,1]])
-B2 = np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0],[0,0,0]])
+B2 = np.array([[1,0,0,0,0],[0,1,0,0,0],[0,0,1,0,0]])
 C2 = np.array([[0,1,0,0,0],[1,1,0,0,0],[0,0,0,1,0],[0,0,0,0,1]])
 Q2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
 R2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
 N2 = np.array([[0,0,0],[0,0,0],[0,0,0]])
-initial_value2 = np.array([[1],[1],[1],[0],[1]])
+initial_value2 = np.array([[1],[1],[1]])
 reset_rnd2 = True
-nonlin_lambda2 = lambda x: 0*x
-setpoint_freq2 = 10
-rollout_steps2 = 49
-setpoint_levels2 = [-1,-0.5,0,0.5,1]
-setpoint_speeds2 = [1,2,5]
+nonlin_lambda2 = lambda x: 0.2*np.sin(x)
+self.setpoint_freq2 = 10
+self.rollout_steps = 50
 class Automatic_Control_Environment(gym.Env):
     """ ***A simple automatic control environment***
     by Niklas Kotarsky and Eric Bergvall
@@ -36,29 +32,13 @@ class Automatic_Control_Environment(gym.Env):
     
 
     metadata = {'render.modes': ['human']}
-    def __init__(self,
-                A=A2,
-                B=B2,
-                C=C2,
-                Q=Q2,
-                R=R2,
-                N=N2,
-                initial_value=initial_value2, 
-                reset_rnd = reset_rnd2, 
-                nonlin_lambda = nonlin_lambda2, 
-                setpoint_freq = setpoint_freq2, 
-                rollout_steps = rollout_steps2,
-                setpoint_levels = setpoint_levels2,
-                setpoint_speeds = setpoint_speeds2, 
-                noise_matrix=0,
-                horizon=100):
+    def __init__(self,A=A2,B=B2,C=C2,Q=Q2,R=R2,N=N2,initial_value=initial_value2, reset_rnd = reset_rnd2, nonlin_lambda = nonlin_lambda2, setpoint_freq = setpoint_freq2 noise_matrix=0,horizon=100):
         super(Automatic_Control_Environment, self).__init__()
         self.A = A
         self.B = B
         self.C = C
-        self.noise_matrix = noise_matrix
+        self.noise_matrix =   noise_matrix
         self.Q = Q
-        self.Q_initial = Q
         self.R = R
         self.N = N
         self.reset_rnd = reset_rnd
@@ -78,11 +58,8 @@ class Automatic_Control_Environment(gym.Env):
         self.observation_space = spaces.Box(low=-high_vector_obs, high=high_vector_obs, dtype=np.float32)
         self.nonlin_term = nonlin_lambda
         self.setpoint_freq = setpoint_freq
-        self.setpoint_levels = setpoint_levels2
-        self.setpoint_speeds = setpoint_speeds2
-        self.setpoint = self.initial_value[-2]
-        self.setpoint_speed = self.initial_value[-1]
-        self.rollout_steps = rollout_steps
+        
+        self.rollout_steps = 19
         self.lqr_optimal = optimal_lqr_control.Lqr(A,B,Q,R,N,horizon)
         
 
@@ -104,28 +81,11 @@ class Automatic_Control_Environment(gym.Env):
         return optimal_action
 
     def new_setpoint(self):
-        if self.nbr_steps % self.setpoint_freq == 0:
-            rnd_update = np.random.uniform(0,10)
-            rnd_level = np.random.choice(self.setpoint_levels)
-            rnd_speed = np.random.choice(self.setpoint_speeds)
-            if rnd_update > 5:
-                self.setpoint = rnd_level
-                self.setpoint_speed = rnd_speed
-                return self.setpoint, self.setpoint_speed
-        
-        return self.setpoint, self.setpoint_speed
-
-    def update_setpoints(self):
-        self.state[-1] = self.setpoint_speed
-        self.state[-2] = self.setpoint
-        return self.state
+        if self.nbr_steps % 10:
 
     def step(self, action):
-        new_setpoint, new_setpoint_speed = self.new_setpoint()
         action = np.expand_dims(action,axis=1)
         next_state = self.state_space_equation(action)
-        self.state = next_state
-        next_state = self.update_setpoints()
         done = self.done()
         self.state = next_state
         self.action = action
@@ -165,20 +125,13 @@ class Automatic_Control_Environment(gym.Env):
 
     def reset(self):
         if self.reset_rnd:
-            self.initial_value_new = np.random.uniform(-0.9,0.9,self.initial_value.shape)
+            self.initial_value = np.random.uniform(-0.9,0.9,self.initial_value.shape)
         
-        self.state = self.initial_value_new
-        
-        
+        self.state = self.initial_value
+        self.Y = self.new_obs()
         self.action = self.initial_action
         self.nbr_steps = 0
-        self.Q = self.Q_initial
-        self.setpoint = self.initial_value[-2]
-        self.setpoint_speed = self.initial_value[-1]
-        self.state[-2] = self.setpoint
-        self.state[-1] = self.setpoint_speed
-        self.Y = self.new_obs()
-        #self.lqr_optimal.reset()
+        self.lqr_optimal.reset()
         squeezed_obs = np.squeeze(self.Y,axis=1)
         return squeezed_obs
 
@@ -186,18 +139,14 @@ class Automatic_Control_Environment(gym.Env):
         return self.state
 
     def reward(self):
-        
-        # Remove setpoint and setpoint speeds for reward calculation
-        x = self.state[0:-2] 
+        x = self.state
         u = self.action
-        s = np.ones(x.shape)*self.setpoint
-        s_T = np.transpose(s)
         x_T = np.transpose(x)
         u_T = np.transpose(u)
-        Q = np.eye(self.Q.shape[0])*self.setpoint_speed
+        Q = self.Q
         R = self.R
         N = self.N
-        current_reward = (x_T-s_T)@Q@(x-s)+u_T@R@u+2*x_T@N@x
+        current_reward = x_T@Q@x+u_T@R@u+2*x_T@N@x
         return -current_reward[0][0]
 
     def done(self):
@@ -234,32 +183,9 @@ if __name__ == "__main__":
     print("obs space: "+str(ac_env.observation_space.shape))
     print("act space: "+str(ac_env.action_space.shape))
     state = ac_env.reset()
-    #optimal_action = ac_env.opt_action()
-    state_list = []
-    action_list = []
-    reward_list = []
-    for i in range(50):
-        action = np.array([0.1,0.1,0.1])
-        next_state, reward, done, _ = ac_env.step(action)
-        state_list.append(np.squeeze(ac_env.state,axis=1))
-        action_list.append(action)
-        reward_list.append(reward)
-    
-    plt.figure(figsize=(20,5))
-    plt.subplot(131)
-    plt.title("actions")
-    plt.plot(action_list)
-    plt.show()
-    plt.figure(figsize=(20,5))
-    plt.subplot(131)
-    plt.title("states")
-    plt.plot(state_list)
-    plt.show()
-    plt.figure(figsize=(20,5))
-    plt.subplot(131)
-    plt.title("rewards")
-    plt.plot(reward_list)
-    plt.show()
+    optimal_action = ac_env.opt_action()
+    #action = np.array([0.1])
+    next_state, reward, done, _ = ac_env.step(optimal_action)
     print("new state")
     print(next_state)
     print("rew")

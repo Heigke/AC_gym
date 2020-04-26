@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 Settings for linear quadratic regulator
 """
 
-A2 = np.array([[0,0,1,0,0],[0,1,0,0,0],[1,0,0,0,0],[0,0,0,1,0],[0,0,0,0,1]])
+A2 = np.array([[1,0,0,0,0],[0,1,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,0,0,1]])
 B2 = np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0],[0,0,0]])
-C2 = np.array([[0,1,0,0,0],[1,1,0,0,0],[0,0,0,1,0],[0,0,0,0,1]])
+C2 = np.array([[1,0,0,0,0],[0,1,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,0,0,1]])
 Q2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
 R2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
 N2 = np.array([[0,0,0],[0,0,0],[0,0,0]])
@@ -233,33 +233,38 @@ if __name__ == "__main__":
     ac_env = Automatic_Control_Environment()
     print("obs space: "+str(ac_env.observation_space.shape))
     print("act space: "+str(ac_env.action_space.shape))
-    state = ac_env.reset()
-    #optimal_action = ac_env.opt_action()
-    state_list = []
-    action_list = []
-    reward_list = []
-    for i in range(50):
-        action = np.array([0.1,0.1,0.1])
-        next_state, reward, done, _ = ac_env.step(action)
-        state_list.append(np.squeeze(ac_env.state,axis=1))
-        action_list.append(action)
-        reward_list.append(reward)
-    
-    plt.figure(figsize=(20,5))
-    plt.subplot(131)
-    plt.title("actions")
-    plt.plot(action_list)
-    plt.show()
-    plt.figure(figsize=(20,5))
-    plt.subplot(131)
-    plt.title("states")
-    plt.plot(state_list)
-    plt.show()
-    plt.figure(figsize=(20,5))
-    plt.subplot(131)
-    plt.title("rewards")
-    plt.plot(reward_list)
-    plt.show()
+    while True:
+        state = ac_env.reset()
+        #optimal_action = ac_env.opt_action()
+        state_list = []
+        action_list = []
+        reward_list = []
+        obs_list = []
+        for i in range(50):
+            action = np.array([0.0,0.0,0.0])
+            next_state, reward, done, _ = ac_env.step(action)
+            state_list.append(np.squeeze(ac_env.state,axis=1))
+            action_list.append(action)
+            reward_list.append(reward)
+            obs_list.append(next_state)
+        
+        
+        plt.figure(figsize=(20,5))
+        plt.subplot(131)
+        plt.title("states")
+        plt.plot(state_list)
+        plt.show()
+        plt.figure(figsize=(20,5))
+        plt.subplot(131)
+        plt.title("obs")
+        plt.plot(obs_list)
+        plt.show()
+        plt.figure(figsize=(20,5))
+        plt.subplot(131)
+        plt.title("rewards")
+        plt.plot(reward_list)
+        plt.show()
+        
     print("new state")
     print(next_state)
     print("rew")

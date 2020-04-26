@@ -24,6 +24,7 @@ rollout_steps2 = 49
 setpoint_levels2 = [-1,-0.5,0,0.5,1]
 setpoint_speeds2 = [1,2,5]
 margin2 = 5
+punishment2 = 1000
 class Automatic_Control_Environment(gym.Env):
     """ ***A simple automatic control environment***
     by Niklas Kotarsky and Eric Bergvall
@@ -51,7 +52,8 @@ class Automatic_Control_Environment(gym.Env):
                 rollout_steps = rollout_steps2,
                 setpoint_levels = setpoint_levels2,
                 setpoint_speeds = setpoint_speeds2,
-                margin = margin2, 
+                margin = margin2,
+                punishment = punishment2, 
                 noise_matrix=0,
                 horizon=100):
         super(Automatic_Control_Environment, self).__init__()
@@ -74,6 +76,7 @@ class Automatic_Control_Environment(gym.Env):
         self.state_limit = 1000
         self.nbr_steps = 0
         self.high = margin
+        self.punishment = punishment
         high_vector_act = self.high*np.ones(self.action.shape[0])
         high_vector_obs = self.high*np.ones(self.Y.shape[0])
         self.action_space = spaces.Box(low=-high_vector_act, high=high_vector_act, dtype=np.float32)
@@ -208,9 +211,9 @@ class Automatic_Control_Environment(gym.Env):
         if self.nbr_steps == self.rollout_steps:
             return True, 0
         elif np.max(np.abs(x-s)) > self.high:
-            return True, 100
+            return True, self.punishment
         elif np.max(np.abs(self.action)) > self.high:
-            return True, 100
+            return True, self.punishment
         #elif np.max(self.state) > self.high
         else:
             return False, 0
@@ -251,7 +254,7 @@ if __name__ == "__main__":
         for i in range(50):
             if i == 48:
                 print("stop")
-            action = np.array([1,1,1])
+            action = np.array([0.3,0.3,0.3])
             next_state, reward, done, _ = ac_env.step(action)
             state_list.append(np.squeeze(ac_env.state,axis=1))
             action_list.append(action)

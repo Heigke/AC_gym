@@ -19,7 +19,7 @@ N2 = np.array([[0,0,0],[0,0,0],[0,0,0]])
 initial_value2 = np.array([[1],[1],[1],[0],[1]])
 reset_rnd2 = True
 nonlin_lambda2 = lambda x: 0*x
-setpoint_freq2 = 10
+setpoint_freq2 = 50
 rollout_steps2 = 49
 setpoint_levels2 = [-1,-0.5,0,0.5,1]
 setpoint_speeds2 = [1,2,5]
@@ -104,7 +104,7 @@ class Automatic_Control_Environment(gym.Env):
         return optimal_action
 
     def new_setpoint(self):
-        if self.nbr_steps % self.setpoint_freq == 0:
+        if self.nbr_steps+1 % self.setpoint_freq == 0:
             rnd_update = np.random.uniform(0,10)
             rnd_level = np.random.choice(self.setpoint_levels)
             rnd_speed = np.random.choice(self.setpoint_speeds)
@@ -124,7 +124,7 @@ class Automatic_Control_Environment(gym.Env):
         new_setpoint, new_setpoint_speed = self.new_setpoint()
         action = np.expand_dims(action,axis=1)
         next_state = self.state_space_equation(action)
-        self.state = next_state
+        self.state = np.clip(-self.high,self.high,next_state)
         next_state = self.update_setpoints()
         done = self.done()
         self.state = next_state
@@ -139,7 +139,7 @@ class Automatic_Control_Environment(gym.Env):
         #next_state = next_state.squeeze()
         #next_state = next_state.astype('float32')
         _ = self.get_debug_dict()
-        next_Y = np.clip(-self.high,self.high,next_Y)
+        #next_Y = np.clip(-self.high,self.high,next_Y)
         return next_Y, reward, done, _
 
     def get_debug_dict(self):
@@ -241,7 +241,9 @@ if __name__ == "__main__":
         reward_list = []
         obs_list = []
         for i in range(50):
-            action = np.array([0.0,0.0,0.0])
+            if i == 48:
+                print("stop")
+            action = np.array([0.1,0.1,0.1])
             next_state, reward, done, _ = ac_env.step(action)
             state_list.append(np.squeeze(ac_env.state,axis=1))
             action_list.append(action)

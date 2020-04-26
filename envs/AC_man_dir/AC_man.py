@@ -210,9 +210,9 @@ class Automatic_Control_Environment(gym.Env):
         s = np.ones(x.shape)*self.setpoint
         if self.nbr_steps == self.rollout_steps:
             return True, 0
-        elif np.max(np.abs(x-s)) > self.high:
+        #elif np.max(np.abs(x-s)) > self.high:
             return True, self.punishment
-        elif np.max(np.abs(self.action)) > self.high:
+        #elif np.max(np.abs(self.action)) > self.high:
             return True, self.punishment
         #elif np.max(self.state) > self.high
         else:

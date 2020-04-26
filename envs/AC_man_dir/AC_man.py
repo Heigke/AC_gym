@@ -23,6 +23,7 @@ setpoint_freq2 = 50
 rollout_steps2 = 49
 setpoint_levels2 = [-1,-0.5,0,0.5,1]
 setpoint_speeds2 = [1,2,5]
+margin2 = 5
 class Automatic_Control_Environment(gym.Env):
     """ ***A simple automatic control environment***
     by Niklas Kotarsky and Eric Bergvall
@@ -49,7 +50,8 @@ class Automatic_Control_Environment(gym.Env):
                 setpoint_freq = setpoint_freq2, 
                 rollout_steps = rollout_steps2,
                 setpoint_levels = setpoint_levels2,
-                setpoint_speeds = setpoint_speeds2, 
+                setpoint_speeds = setpoint_speeds2,
+                margin = margin2, 
                 noise_matrix=0,
                 horizon=100):
         super(Automatic_Control_Environment, self).__init__()
@@ -71,7 +73,7 @@ class Automatic_Control_Environment(gym.Env):
         self.action = self.initial_action
         self.state_limit = 1000
         self.nbr_steps = 0
-        self.high = 5
+        self.high = margin
         high_vector_act = self.high*np.ones(self.action.shape[0])
         high_vector_obs = self.high*np.ones(self.Y.shape[0])
         self.action_space = spaces.Box(low=-high_vector_act, high=high_vector_act, dtype=np.float32)
@@ -124,16 +126,16 @@ class Automatic_Control_Environment(gym.Env):
         new_setpoint, new_setpoint_speed = self.new_setpoint()
         action = np.expand_dims(action,axis=1)
         next_state = self.state_space_equation(action)
-        self.state = np.clip(-self.high,self.high,next_state)
+        self.state = next_state
         next_state = self.update_setpoints()
-        done = self.done()
         self.state = next_state
         self.action = action
         next_Y = self.new_obs()
         self.Y = next_Y
         reward = self.reward()
         self.nbr_steps += 1
-
+        done, punish = self.done()
+        reward = reward - punish
         next_Y = np.squeeze(next_Y,axis=1)
         next_Y = next_Y.astype('float32')
         #next_state = next_state.squeeze()
@@ -201,11 +203,17 @@ class Automatic_Control_Environment(gym.Env):
         return -current_reward[0][0]
 
     def done(self):
+        x = self.state[0:-2] 
+        s = np.ones(x.shape)*self.setpoint
         if self.nbr_steps == self.rollout_steps:
-            return True
+            return True, 0
+        elif np.max(np.abs(x-s)) > self.high:
+            return True, 100
+        elif np.max(np.abs(self.action)) > self.high:
+            return True, 100
         #elif np.max(self.state) > self.high
         else:
-            return False
+            return False, 0
 
 
 if __name__ == "__main__":
@@ -243,7 +251,7 @@ if __name__ == "__main__":
         for i in range(50):
             if i == 48:
                 print("stop")
-            action = np.array([0.1,0.1,0.1])
+            action = np.array([1,1,1])
             next_state, reward, done, _ = ac_env.step(action)
             state_list.append(np.squeeze(ac_env.state,axis=1))
             action_list.append(action)

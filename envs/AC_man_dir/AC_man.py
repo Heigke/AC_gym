@@ -55,7 +55,7 @@ class Automatic_Control_Environment(gym.Env):
         self.action_space = spaces.Box(low=-high_vector_act, high=high_vector_act, dtype=np.float32)
         self.observation_space = spaces.Box(low=-high_vector_obs, high=high_vector_obs, dtype=np.float32)
         self.nonlin_term = nonlin_lambda
-
+        self.shifted = False
 
         self.rollout_steps = 19
         
@@ -83,9 +83,12 @@ class Automatic_Control_Environment(gym.Env):
         next_state = self.state_space_equation(action)
         done = self.done()
         self.state = next_state
-        if self.nbr_steps == 10:
-            if np.random.uniform(0,10) > 5:
-                self.state[-1] = 1
+        if self.shifted == False:
+            if self.nbr_steps > 7 and self.nbr_steps < 15:
+                if np.random.uniform(0,10) > 5:
+                    self.state[-1] = np.random.choice([-1,0,1])
+                    self.shifted = True
+                    print("level shifted")
         self.action = action                                                                                                                             
         next_Y = self.new_obs()
         self.Y = next_Y
@@ -122,6 +125,7 @@ class Automatic_Control_Environment(gym.Env):
         return observable_check
 
     def reset(self):
+        self.shifted = False
         if self.reset_rnd:
             self.initial_value = np.random.uniform(-0.9,0.9,self.initial_value.shape)
         

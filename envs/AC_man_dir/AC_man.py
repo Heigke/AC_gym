@@ -1,7 +1,7 @@
 import numpy as np
 from gym import spaces
 import optimal_lqr_control
-#from stable_baselines.common.env_checker import check_env
+from stable_baselines.common.env_checker import check_env
 import gym
 import sys
 """
@@ -17,31 +17,29 @@ N2 = np.array([[0,0,0],[0,0,0],[0,0,0]])
 initial_value2 = np.array([[1],[1],[1]])
 reset_rnd2 = True
 nonlin_lambda2 = lambda x: 0.0*np.sin(x)
-setpoint_freq2 = 10
-rollout_steps = 50
 class Automatic_Control_Environment(gym.Env):
     """ ***A simple automatic control environment***
     by Niklas Kotarsky and Eric Bergvall
-    
+
     The system is described by x_t+1 = A*x_t + B*u_t + noise
     The observed system y_t+1 = C*x_t+1 + noise
     where x_t is a column vector with dimension N and A has dimension N x N
-    u_t has dimension M and B then have dimension NxM 
-    Noise has dimension N and noise_matrix has dimension NxN 
+    u_t has dimension M and B then have dimension NxM
+    Noise has dimension N and noise_matrix has dimension NxN
     C has dimensions KxN s.t. y has dimension K. Noise dimension K"""
-    
+
 
     metadata = {'render.modes': ['human']}
-    def __init__(self,A=A2,B=B2,C=C2,Q=Q2,R=R2,N=N2,initial_value=initial_value2, reset_rnd = reset_rnd2, nonlin_lambda = nonlin_lambda2, setpoint_freq = setpoint_freq2, noise_matrix=0,horizon=100):
+    def __init__(self,A=A2,B=B2,C=C2,Q=Q2,R=R2,N=N2,initial_value=initial_value2, reset_rnd = reset_rnd2, nonlin_lambda = nonlin_lambda2, noise_matrix=0,horizon=100):         
         super(Automatic_Control_Environment, self).__init__()
         self.A = A
         self.B = B
         self.C = C
-        self.noise_matrix =   noise_matrix
+        self.noise_matrix = noise_matrix
         self.Q = Q
         self.R = R
         self.N = N
-        self.reset_rnd = reset_rnd
+        self.reset_rnd = reset_rnd                                                                                                                       
         self.horizon = horizon
         self.initial_value = initial_value
         self.state = self.initial_value
@@ -57,38 +55,35 @@ class Automatic_Control_Environment(gym.Env):
         self.action_space = spaces.Box(low=-high_vector_act, high=high_vector_act, dtype=np.float32)
         self.observation_space = spaces.Box(low=-high_vector_obs, high=high_vector_obs, dtype=np.float32)
         self.nonlin_term = nonlin_lambda
-        self.setpoint_freq = setpoint_freq
-        
+
+
         self.rollout_steps = 19
         self.lqr_optimal = optimal_lqr_control.Lqr(A,B,Q,R,N,horizon)
         
-
     def state_space_equation(self, action):
         noise = np.random.normal(0,1,self.state.shape)
         #new_state = self.A@self.state+self.B@action+self.noise_matrix*noise
         new_state = self.A@self.state+self.B@action+self.nonlin_term(self.state)+self.noise_matrix*noise
-        
+
         return new_state
 
     def new_obs(self):
         noise = np.random.normal(0,1,self.Y.shape)
-        
+
         new_Y = self.C@self.state #+ noise
         return new_Y
+    
     def opt_action(self):
         optimal_action = self.lqr_optimal.action(self.state)
         optimal_action = np.squeeze(optimal_action,axis=1)
         return optimal_action
-
-    #def new_setpoint(self):
-     #   if self.nbr_steps % 10:
 
     def step(self, action):
         action = np.expand_dims(action,axis=1)
         next_state = self.state_space_equation(action)
         done = self.done()
         self.state = next_state
-        self.action = action
+        self.action = action                                                                                                                             
         next_Y = self.new_obs()
         self.Y = next_Y
         reward = self.reward()
@@ -120,17 +115,18 @@ class Automatic_Control_Environment(gym.Env):
             O.append(new_entry)
         O = np.vstack(O)
         rank = np.linalg.matrix_rank(O)
-        observable_check = (rank == self.A.shape[0])
+        observable_check = (rank == self.A.shape[0])                                                                                                     
         return observable_check
 
     def reset(self):
         if self.reset_rnd:
             self.initial_value = np.random.uniform(-0.9,0.9,self.initial_value.shape)
-        
+
         self.state = self.initial_value
         self.Y = self.new_obs()
         self.action = self.initial_action
         self.nbr_steps = 0
+        self.lqr_optimal.reset()                                                                                                                               
         self.lqr_optimal.reset()
         squeezed_obs = np.squeeze(self.Y,axis=1)
         return squeezed_obs
@@ -162,18 +158,18 @@ if __name__ == "__main__":
     # B = np.array([[1,0],[0,1]])
     # C = np.array([[1,0],[0,1]])
     # Q = np.array([[1,0],[0,1]])
-    # R = np.array([[1,0],[0,1]])
-    # N = np.array([[0,0],[0,0]])
+    # R = np.array([[1,0],[0,1]])                                                                                                                    
+    # # N = np.array([[0,0],[0,0]])
     #initial_value = np.array([[0.1],[0.1]])
     A = np.array([[0.2,0.3,0.4],[0.1,-0.3,0.4],[0.2,0.5,0.6]])
     B = np.array([[1,0,0],[0,1,0],[0,0,1]])
     C = np.array([[1,1,0],[1,0,0]])
     Q = np.array([[1,0,0],[0,1,0],[0,0,1]])
-    R = np.array([[1,0,0],[0,1,0],[0,0,1]])
+    R = np.array([[1,0,0],[0,1,0],[0,0,1]]) 
     N = np.array([[0,0,0],[0,0,0],[0,0,0]])
     initial_value = np.array([[0.8],[0.8],[0.8]])
-    # A = np.array([[1]])
-    # B = np.array([[1]])
+    # A = np.array([[1]])                                                                                                                            
+    # # B = np.array([[1]])
     # C = np.array([[1]])
     # Q = np.array([[1]])
     # R = np.array([[1]])
@@ -202,5 +198,4 @@ if __name__ == "__main__":
     print(ac_env.observation_space.dtype)
     #check_env(ac_env, warn=True)
     print(ac_env.observable())
-    ac_env.opt_action()
-  
+    ac_env.opt_action()                

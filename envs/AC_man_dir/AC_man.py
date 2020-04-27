@@ -88,7 +88,7 @@ class Automatic_Control_Environment(gym.Env):
                 if np.random.uniform(0,10) > 5:
                     self.state[-1] = np.random.choice([-1,0,1])
                     self.shifted = True
-                    print("level shifted")
+                    #print("level shifted")
         self.action = action                                                                                                                             
         next_Y = self.new_obs()
         self.Y = next_Y

@@ -4,17 +4,18 @@ import optimal_lqr_control
 #from stable_baselines.common.env_checker import check_env
 import gym
 import sys
+import matplotlib.pyplot as plt
 """
 Settings for linear quadratic regulator
 """
 
-A2 = np.array([[0,0,1,0],[0,1,0,0],[1,0,0,0],[0,0,0,1]])
-B2 = np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0]])
-C2 = np.array([[0,1,0,0],[1,1,0,0],[0,0,0,1]])
+A2 = np.array([[0,0,1,0,0],[0,1,0,0,0],[1,0,0,0,0],[0,0,0,1,0],[0,0,0,0,1]])
+B2 = np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0],[0,0,0]])
+C2 = np.array([[0,1,0,0,0],[1,1,0,0,0],[0,0,0,1,0],[0,0,0,0,1]])
 Q2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
 R2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
 N2 = np.array([[0,0,0],[0,0,0],[0,0,0]])
-initial_value2 = np.array([[1],[1],[1],[0]])
+initial_value2 = np.array([[1],[1],[1],[0],[1]])
 reset_rnd2 = True
 nonlin_lambda2 = lambda x: 0.0*np.sin(x)
 class Automatic_Control_Environment(gym.Env):
@@ -58,7 +59,9 @@ class Automatic_Control_Environment(gym.Env):
         self.shifted = False
 
         self.rollout_steps = 19
-        
+        self.mode = self.initial_value[-1]
+        self.start_shift = 0
+        self.unscaled_reward = 0
         
     def state_space_equation(self, action):
         noise = np.random.normal(0,1,self.state.shape)
@@ -86,14 +89,18 @@ class Automatic_Control_Environment(gym.Env):
         if self.shifted == False:
             if self.nbr_steps > 7 and self.nbr_steps < 15:
                 if np.random.uniform(0,10) > 5:
-                    self.state[-1] = np.random.choice([-1,0,1])
+                    self.state[-2] = np.random.choice([-1,0,1])
+                    self.mode = np.random.choice([1,2])
+                    self.state[-1] = self.mode
                     self.shifted = True
+                    self.start_shift = self.nbr_steps
                     #print("level shifted")
         self.action = action                                                                                                                             
         next_Y = self.new_obs()
         self.Y = next_Y
-        reward = self.reward()
         self.nbr_steps += 1
+        reward = self.reward()
+        
 
         next_Y = np.squeeze(next_Y,axis=1)
         next_Y = next_Y.astype('float32')
@@ -130,7 +137,8 @@ class Automatic_Control_Environment(gym.Env):
             self.initial_value = np.random.uniform(-0.9,0.9,self.initial_value.shape)
         
         self.state = self.initial_value
-        self.state[-1] = 0
+        self.state[-2] = 0
+        self.state[-1] = 1
         self.Y = self.new_obs()
         self.action = self.initial_action
         self.nbr_steps = 0
@@ -141,15 +149,24 @@ class Automatic_Control_Environment(gym.Env):
         return self.state
 
     def reward(self):
-        x = self.state[0:-1]
-        s = self.state[-1][0]*np.ones(x.shape)
+        x = self.state[0:-2]
+        s = self.state[-2][0]*np.ones(x.shape)
         u = self.action
         x_T = np.transpose(x)
         u_T = np.transpose(u)
         s_T = np.transpose(s)
         Q = self.Q
-        R = self.R
+        R_factor = 1
+        if self.shifted == True:
+            if self.mode == 1:
+                R_factor = np.clip(np.power(1/(10)*(self.nbr_steps-self.start_shift),2),0,1)
+            elif self.mode == 2:
+                R_factor = np.clip(np.power(1/(5)*(self.nbr_steps-self.start_shift),2),0,1)
+        
+        R = R_factor * np.eye(self.R.shape[0])
         N = self.N
+        const_R = 1 * np.eye(self.R.shape[0])
+        self.unscaled_reward = -((x_T-s_T)@Q@(x-s)+u_T@const_R@u+2*x_T@N@x)[0][0]
         current_reward = (x_T-s_T)@Q@(x-s)+u_T@R@u+2*x_T@N@x
         return -current_reward[0][0]
 
@@ -189,15 +206,53 @@ if __name__ == "__main__":
     while True:
         state = ac_env.reset()
         print("Reset!")
-        
+        a = []
+        ns = []
+        i_s = []
+        r = []
+        ur = []
+        action = np.array([0.1,0.1,0.1])
+
         for i in range(20):
             
             #optimal_action = ac_env.opt_action()
-            action = np.array([0.1,0.1,0.1])
+            action = i*np.array([0.1,0.1,0.1])
             next_state, reward, done, _ = ac_env.step(action)
             print("Iteration:"+str(i))
             print("State:"+str(next_state))
             print("Reward"+str(reward))
+            a.append(action)
+            ns.append(next_state)
+            i_s.append(ac_env.state[:,0])
+            r.append(reward)
+            ur.append(ac_env.unscaled_reward)
+        
+        plt.figure(figsize=(20,5))
+        plt.subplot(131)
+        plt.title('action')
+        plt.plot(a)
+        plt.show()
+        plt.figure(figsize=(20,5))
+        plt.subplot(131)
+        plt.title('next_state')
+        plt.plot(ns)
+        plt.show()
+        plt.figure(figsize=(20,5))
+        plt.subplot(131)
+        plt.title('inner_state')
+        plt.plot(i_s)
+        plt.show()
+        plt.figure(figsize=(20,5))
+        plt.subplot(131)
+        plt.title('reward')
+        plt.plot(r)
+        plt.show()
+        plt.figure(figsize=(20,5))
+        plt.subplot(131)
+        plt.title('unscaled reward')
+        plt.plot(ur)
+        plt.show()
+
     print("new state")
     print(next_state)
     print("rew")

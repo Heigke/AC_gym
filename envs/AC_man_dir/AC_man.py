@@ -90,7 +90,7 @@ class Automatic_Control_Environment(gym.Env):
             if self.nbr_steps > 7 and self.nbr_steps < 15:
                 if np.random.uniform(0,10) > 5:
                     self.state[-2] = np.random.choice([-1,0,1])
-                    self.mode = np.random.choice([1,2])
+                    self.mode = np.random.choice([1])
                     self.state[-1] = self.mode
                     self.shifted = True
                     self.start_shift = self.nbr_steps
@@ -157,12 +157,23 @@ class Automatic_Control_Environment(gym.Env):
         s_T = np.transpose(s)
         Q = self.Q
         R_factor = 1
+        #if self.shifted == True:
+        #    if self.mode == 1:
+        #        R_factor = np.clip(np.power(10-(9/5)*(self.nbr_steps-self.start_shift),2),1,50)
+        #    elif self.mode == 2:
+        #        R_factor = np.clip(np.power(10-(9/5)*(self.nbr_steps-self.start_shift),2),1,50)
         if self.shifted == True:
             if self.mode == 1:
-                R_factor = np.clip(np.power(10-(9/5)*(self.nbr_steps-self.start_shift),2),1,50)
+                if (self.nbr_steps-self.start_shift) < 10:
+                    R_factor = 2
+                else:
+                    R_factor = 1
             elif self.mode == 2:
-                R_factor = np.clip(np.power(10-(9/5)*(self.nbr_steps-self.start_shift),2),1,50)
-        
+                if (self.nbr_steps-self.start_shift) < 10:
+                    R_factor = 10
+                else:
+                    R_factor = 1
+
         R = R_factor * np.eye(self.R.shape[0])
         N = self.N
         const_R = 1 * np.eye(self.R.shape[0])
@@ -217,9 +228,9 @@ if __name__ == "__main__":
             
             #optimal_action = ac_env.opt_action()
             if ac_env.shifted == True:
-                action = 0*np.array([0.1,0.1,0.1])
+                action = 1*np.array([0.1,0.1,0.1])
             else:
-                action = i*np.array([0.1,0.1,0.1])
+                action = i*np.array([0.01,0.01,0.01])
             next_state, reward, done, _ = ac_env.step(action)
             print("Iteration:"+str(i))
             print("State:"+str(next_state))

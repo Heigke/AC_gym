@@ -159,7 +159,7 @@ class Automatic_Control_Environment(gym.Env):
         R_factor = 1
         if self.shifted == True:
             if self.mode == 1:
-                R_factor = np.clip(np.power(30-2.9*(self.nbr_steps-self.start_shift),2),1,50)
+                R_factor = np.clip(np.power(10-(9/5)*(self.nbr_steps-self.start_shift),2),1,50)
             elif self.mode == 2:
                 R_factor = np.clip(np.power(10-(9/5)*(self.nbr_steps-self.start_shift),2),1,50)
         
@@ -212,11 +212,14 @@ if __name__ == "__main__":
         r = []
         ur = []
         action = np.array([0.1,0.1,0.1])
-
+        
         for i in range(20):
             
             #optimal_action = ac_env.opt_action()
-            action = i*np.array([0.1,0.1,0.1])
+            if ac_env.shifted == True:
+                action = 0*np.array([0.1,0.1,0.1])
+            else:
+                action = i*np.array([0.1,0.1,0.1])
             next_state, reward, done, _ = ac_env.step(action)
             print("Iteration:"+str(i))
             print("State:"+str(next_state))
@@ -226,6 +229,7 @@ if __name__ == "__main__":
             i_s.append(ac_env.state[:,0])
             r.append(reward)
             ur.append(ac_env.unscaled_reward)
+            
         
         plt.figure(figsize=(20,5))
         plt.subplot(131)

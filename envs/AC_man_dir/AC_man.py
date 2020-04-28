@@ -159,9 +159,9 @@ class Automatic_Control_Environment(gym.Env):
         R_factor = 1
         if self.shifted == True:
             if self.mode == 1:
-                R_factor = np.clip(np.power(1/(10)*(self.nbr_steps-self.start_shift),2),0,1)
+                R_factor = np.clip(np.power(30-2.9*(self.nbr_steps-self.start_shift),2),1,50)
             elif self.mode == 2:
-                R_factor = np.clip(np.power(1/(5)*(self.nbr_steps-self.start_shift),2),0,1)
+                R_factor = np.clip(np.power(10-(9/5)*(self.nbr_steps-self.start_shift),2),1,50)
         
         R = R_factor * np.eye(self.R.shape[0])
         N = self.N

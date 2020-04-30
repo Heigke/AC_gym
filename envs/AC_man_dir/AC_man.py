@@ -58,7 +58,7 @@ class Automatic_Control_Environment(gym.Env):
 
 
         self.rollout_steps = 19
-        self.lqr_optimal = optimal_lqr_control.Lqr(A,B,Q,R,N,horizon)
+        #self.lqr_optimal = optimal_lqr_control.Lqr(A,B,Q,R,N,horizon)
         
     def state_space_equation(self, action):
         noise = np.random.normal(0,1,self.state.shape)
@@ -73,10 +73,10 @@ class Automatic_Control_Environment(gym.Env):
         new_Y = self.C@self.state #+ noise
         return new_Y
     
-    def opt_action(self):
-        optimal_action = self.lqr_optimal.action(self.state)
-        optimal_action = np.squeeze(optimal_action,axis=1)
-        return optimal_action
+#    def opt_action(self):
+#        optimal_action = self.lqr_optimal.action(self.state)
+#        optimal_action = np.squeeze(optimal_action,axis=1)
+#        return optimal_action
 
     def step(self, action):
         action = np.expand_dims(action,axis=1)
@@ -125,9 +125,8 @@ class Automatic_Control_Environment(gym.Env):
         self.state = self.initial_value
         self.Y = self.new_obs()
         self.action = self.initial_action
-        self.nbr_steps = 0
-        self.lqr_optimal.reset()                                                                                                                               
-        self.lqr_optimal.reset()
+        self.nbr_steps = 0                                                                                                                              
+        #self.lqr_optimal.reset()
         squeezed_obs = np.squeeze(self.Y,axis=1)
         return squeezed_obs
 

@@ -9,13 +9,21 @@ import matplotlib.pyplot as plt
 Settings for linear quadratic regulator
 """
 
-A2 = np.array([[0,0,1,0,0],[0,1,0,0,0],[1,0,0,0,0],[0,0,0,1,0],[0,0,0,0,1]])
-B2 = np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0],[0,0,0]])
-C2 = np.array([[0,1,0,0,0],[1,1,0,0,0],[0,0,0,1,0],[0,0,0,0,1]])
-Q2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
-R2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
-N2 = np.array([[0,0,0],[0,0,0],[0,0,0]])
-initial_value2 = np.array([[1],[1],[1],[0],[1]])
+A2 = np.array([
+    [1,0,0,0,0,0,0,0],
+    [0,1,0,0,0,0,0,0],
+    [0,0,1,0,0,0,0,0],
+    [0,0,0,1,0,0,0,0],
+    [0,0,0,0,1,0,0,0],
+    [0,0,0,0,0,1,0,0],
+    [0,0,0,0,0,0,1,0],
+    [0,0,0,0,0,0,0,1]])
+B2 = A2
+C2 = A2
+Q2 = A2
+R2 = A2
+N2 = 0*A2
+initial_value2 = np.array([[1],[1],[1],[1],[1],[1],[1],[1]])
 reset_rnd2 = True
 nonlin_lambda2 = lambda x: 0.0*np.sin(x)
 class Automatic_Control_Environment(gym.Env):
@@ -86,15 +94,15 @@ class Automatic_Control_Environment(gym.Env):
         next_state = self.state_space_equation(action)
         done = self.done()
         self.state = next_state
-        if self.shifted == False:
-            if self.nbr_steps > 7 and self.nbr_steps < 15:
-                if np.random.uniform(0,10) > 5:
-                    self.state[-2] = np.random.choice([-1,0,1])
-                    self.mode = np.random.choice([1])
-                    self.state[-1] = self.mode
-                    self.shifted = True
-                    self.start_shift = self.nbr_steps
-                    #print("level shifted")
+        # if self.shifted == False:
+        #     if self.nbr_steps > 7 and self.nbr_steps < 15:
+        #         if np.random.uniform(0,10) > 5:
+        #             self.state[-2] = np.random.choice([-1,0,1])
+        #             self.mode = np.random.choice([1])
+        #             self.state[-1] = self.mode
+        #             self.shifted = True
+        #             self.start_shift = self.nbr_steps
+        #             #print("level shifted")
         self.action = action                                                                                                                             
         next_Y = self.new_obs()
         self.Y = next_Y
@@ -137,8 +145,8 @@ class Automatic_Control_Environment(gym.Env):
             self.initial_value = np.random.uniform(-0.9,0.9,self.initial_value.shape)
         
         self.state = self.initial_value
-        self.state[-2] = 0
-        self.state[-1] = 1
+        #self.state[-2] = 0
+        #self.state[-1] = 1
         self.Y = self.new_obs()
         self.action = self.initial_action
         self.nbr_steps = 0
@@ -149,12 +157,12 @@ class Automatic_Control_Environment(gym.Env):
         return self.state
 
     def reward(self):
-        x = self.state[0:-2]
-        s = self.state[-2][0]*np.ones(x.shape)
+        x = self.state
+        #s = self.state[-2][0]*np.ones(x.shape)
         u = self.action
         x_T = np.transpose(x)
         u_T = np.transpose(u)
-        s_T = np.transpose(s)
+        #s_T = np.transpose(s)
         Q = self.Q
         R_factor = 1
         #if self.shifted == True:
@@ -162,23 +170,23 @@ class Automatic_Control_Environment(gym.Env):
         #        R_factor = np.clip(np.power(10-(9/5)*(self.nbr_steps-self.start_shift),2),1,50)
         #    elif self.mode == 2:
         #        R_factor = np.clip(np.power(10-(9/5)*(self.nbr_steps-self.start_shift),2),1,50)
-        if self.shifted == True:
-            if self.mode == 1:
-                if (self.nbr_steps-self.start_shift) < 10:
-                    R_factor = 2
-                else:
-                    R_factor = 1
-            elif self.mode == 2:
-                if (self.nbr_steps-self.start_shift) < 10:
-                    R_factor = 10
-                else:
-                    R_factor = 1
+        # if self.shifted == True:
+        #     if self.mode == 1:
+        #         if (self.nbr_steps-self.start_shift) < 10:
+        #             R_factor = 2
+        #         else:
+        #             R_factor = 1
+        #     elif self.mode == 2:
+        #         if (self.nbr_steps-self.start_shift) < 10:
+        #             R_factor = 10
+        #         else:
+        #             R_factor = 1
 
         R = R_factor * np.eye(self.R.shape[0])
         N = self.N
         const_R = 1 * np.eye(self.R.shape[0])
-        self.unscaled_reward = -((x_T-s_T)@Q@(x-s)+u_T@const_R@u+2*x_T@N@x)[0][0]
-        current_reward = (x_T-s_T)@Q@(x-s)+u_T@R@u+2*x_T@N@x
+        #self.unscaled_reward = -((x_T-s_T)@Q@(x-s)+u_T@const_R@u+2*x_T@N@x)[0][0]
+        current_reward = (x_T)@Q@(x)+u_T@R@u+2*x_T@N@x
         return -current_reward[0][0]
 
     def done(self):
@@ -222,7 +230,7 @@ if __name__ == "__main__":
         i_s = []
         r = []
         ur = []
-        action = np.array([0.1,0.1,0.1])
+        action = np.array([0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1])
         
         for i in range(20):
             
@@ -230,7 +238,7 @@ if __name__ == "__main__":
             if ac_env.shifted == True:
                 action = 1*np.array([0.1,0.1,0.1])
             else:
-                action = i*np.array([0.01,0.01,0.01])
+                action = i*np.array([0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1])
             next_state, reward, done, _ = ac_env.step(action)
             print("Iteration:"+str(i))
             print("State:"+str(next_state))
@@ -285,3 +293,11 @@ if __name__ == "__main__":
     #check_env(ac_env, warn=True)
     print(ac_env.observable())
     ac_env.opt_action()                
+
+"""     A2 = np.array([[0,0,1,0,0],[0,1,0,0,0],[1,0,0,0,0],[0,0,0,1,0],[0,0,0,0,1]])
+B2 = np.array([[1,0,0],[0,1,0],[0,0,1],[0,0,0],[0,0,0]])
+C2 = np.array([[0,1,0,0,0],[1,1,0,0,0],[0,0,0,1,0],[0,0,0,0,1]])
+Q2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
+R2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
+N2 = np.array([[0,0,0],[0,0,0],[0,0,0]])
+initial_value2 = np.array([[1],[1],[1],[0],[1]]) """

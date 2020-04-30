@@ -8,15 +8,15 @@ import sys
 Settings for linear quadratic regulator
 """
 
-A2 = np.array([[0,0,1],[0,1,0],[1,0,0]])
-B2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
-C2 = np.array([[0,1,0],[1,1,0]])
-Q2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
-R2 = np.array([[1,0,0],[0,1,0],[0,0,1]])
-N2 = np.array([[0,0,0],[0,0,0],[0,0,0]])
-initial_value2 = np.array([[1],[1],[1]])
+A2 = np.eye(4)
+B2 = A2
+C2 = A2
+Q2 = A2
+R2 = A2
+N2 = A2
+initial_value2 = np.array([[1],[1],[1],[1]])
 reset_rnd2 = True
-nonlin_lambda2 = lambda x: 0.2*np.sin(x)
+nonlin_lambda2 = lambda x: 0.0*np.sin(x)
 class Automatic_Control_Environment(gym.Env):
     """ ***A simple automatic control environment***
     by Niklas Kotarsky and Eric Bergvall

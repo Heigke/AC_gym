@@ -8,13 +8,13 @@ import sys
 Settings for linear quadratic regulator
 """
 
-A2 = np.eye(4)
+A2 = np.eye(3)
 B2 = A2
 C2 = A2
 Q2 = A2
 R2 = A2
-N2 = A2
-initial_value2 = np.array([[1],[1],[1],[1]])
+N2 = 0*A2
+initial_value2 = np.array([[1],[1],[1])
 reset_rnd2 = True
 nonlin_lambda2 = lambda x: 0.0*np.sin(x)
 class Automatic_Control_Environment(gym.Env):
@@ -180,8 +180,8 @@ if __name__ == "__main__":
     print("act space: "+str(ac_env.action_space.shape))
     state = ac_env.reset()
     #optimal_action = ac_env.opt_action()
-    #action = np.array([0.1])
-    next_state, reward, done, _ = ac_env.step(optimal_action)
+    action = np.array([0.1,0.1,0.1,0.1])
+    next_state, reward, done, _ = ac_env.step(action)
     print("new state")
     print(next_state)
     print("rew")

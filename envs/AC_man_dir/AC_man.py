@@ -115,7 +115,7 @@ class Automatic_Control_Environment(gym.Env):
         #next_state = next_state.squeeze()
         #next_state = next_state.astype('float32')
         _ = self.get_debug_dict()
-        next_Y = np.clip(-self.high,self.high,next_Y)
+        #next_Y = np.clip(-self.high,self.high,next_Y)
         return next_Y, reward, done, _
 
     def get_debug_dict(self):
@@ -158,35 +158,13 @@ class Automatic_Control_Environment(gym.Env):
 
     def reward(self):
         x = self.state
-        #s = self.state[-2][0]*np.ones(x.shape)
         u = self.action
         x_T = np.transpose(x)
         u_T = np.transpose(u)
-        #s_T = np.transpose(s)
         Q = self.Q
-        R_factor = 1
-        #if self.shifted == True:
-        #    if self.mode == 1:
-        #        R_factor = np.clip(np.power(10-(9/5)*(self.nbr_steps-self.start_shift),2),1,50)
-        #    elif self.mode == 2:
-        #        R_factor = np.clip(np.power(10-(9/5)*(self.nbr_steps-self.start_shift),2),1,50)
-        # if self.shifted == True:
-        #     if self.mode == 1:
-        #         if (self.nbr_steps-self.start_shift) < 10:
-        #             R_factor = 2
-        #         else:
-        #             R_factor = 1
-        #     elif self.mode == 2:
-        #         if (self.nbr_steps-self.start_shift) < 10:
-        #             R_factor = 10
-        #         else:
-        #             R_factor = 1
-
-        R = R_factor * np.eye(self.R.shape[0])
+        R = self.R
         N = self.N
-        const_R = 1 * np.eye(self.R.shape[0])
-        #self.unscaled_reward = -((x_T-s_T)@Q@(x-s)+u_T@const_R@u+2*x_T@N@x)[0][0]
-        current_reward = (x_T)@Q@(x)+u_T@R@u+2*x_T@N@x
+        current_reward = x_T@Q@x+u_T@R@u+2*x_T@N@x
         return -current_reward[0][0]
 
     def done(self):

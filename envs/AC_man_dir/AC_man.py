@@ -1,7 +1,7 @@
 import numpy as np
 from gym import spaces
 #import optimal_lqr_control
-from stable_baselines.common.env_checker import check_env
+#from stable_baselines.common.env_checker import check_env
 import gym
 import sys
 """
@@ -58,7 +58,7 @@ class Automatic_Control_Environment(gym.Env):
 
 
         self.rollout_steps = 19
-        self.lqr_optimal = optimal_lqr_control.Lqr(A,B,Q,R,N,horizon)
+#        self.lqr_optimal = optimal_lqr_control.Lqr(A,B,Q,R,N,horizon)
         
     def state_space_equation(self, action):
         noise = np.random.normal(0,1,self.state.shape)
@@ -73,10 +73,10 @@ class Automatic_Control_Environment(gym.Env):
         new_Y = self.C@self.state #+ noise
         return new_Y
     
-    def opt_action(self):
-        optimal_action = self.lqr_optimal.action(self.state)
-        optimal_action = np.squeeze(optimal_action,axis=1)
-        return optimal_action
+#    def opt_action(self):
+#        optimal_action = self.lqr_optimal.action(self.state)
+#        optimal_action = np.squeeze(optimal_action,axis=1)
+#        return optimal_action
 
     def step(self, action):
         action = np.expand_dims(action,axis=1)
@@ -126,8 +126,8 @@ class Automatic_Control_Environment(gym.Env):
         self.Y = self.new_obs()
         self.action = self.initial_action
         self.nbr_steps = 0
-        self.lqr_optimal.reset()                                                                                                                               
-        self.lqr_optimal.reset()
+#        self.lqr_optimal.reset()                                                                                                                               
+#        self.lqr_optimal.reset()
         squeezed_obs = np.squeeze(self.Y,axis=1)
         return squeezed_obs
 
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     print("obs space: "+str(ac_env.observation_space.shape))
     print("act space: "+str(ac_env.action_space.shape))
     state = ac_env.reset()
-    optimal_action = ac_env.opt_action()
+    #optimal_action = ac_env.opt_action()
     #action = np.array([0.1])
     next_state, reward, done, _ = ac_env.step(optimal_action)
     print("new state")
@@ -198,4 +198,4 @@ if __name__ == "__main__":
     print(ac_env.observation_space.dtype)
     #check_env(ac_env, warn=True)
     print(ac_env.observable())
-    ac_env.opt_action()                
+    #ac_env.opt_action()                

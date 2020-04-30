@@ -1,0 +1,6 @@
+setup.py
+AC_man.egg-info/PKG-INFO
+AC_man.egg-info/SOURCES.txt
+AC_man.egg-info/dependency_links.txt
+AC_man.egg-info/requires.txt
+AC_man.egg-info/top_level.txt

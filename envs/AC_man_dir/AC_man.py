@@ -8,13 +8,13 @@ import sys
 Settings for linear quadratic regulator
 """
 
-A2 = np.eye(4)
+A2 = np.eye(3)
 B2 = A2
 C2 = A2
 Q2 = A2
 R2 = A2
 N2 = 0*A2
-initial_value2 = np.array([[1],[1],[1],[1]])
+initial_value2 = np.array([[1],[1],[1])
 reset_rnd2 = True
 nonlin_lambda2 = lambda x: 0.0*np.sin(x)
 class Automatic_Control_Environment(gym.Env):
@@ -94,7 +94,7 @@ class Automatic_Control_Environment(gym.Env):
         #next_state = next_state.squeeze()
         #next_state = next_state.astype('float32')
         _ = self.get_debug_dict()
-        next_Y = np.clip(-self.high,self.high,next_Y)
+        #next_Y = np.clip(-self.high,self.high,next_Y)
         return next_Y, reward, done, _
 
     def get_debug_dict(self):

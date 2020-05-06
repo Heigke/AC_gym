@@ -56,7 +56,7 @@ class Automatic_Control_Environment(gym.Env):
         self.observation_space = spaces.Box(low=-high_vector_obs, high=high_vector_obs, dtype=np.float32)
         self.nonlin_term = nonlin_lambda
 
-
+        self.reward_now = 0
         self.rollout_steps = 19
 #        self.lqr_optimal = optimal_lqr_control.Lqr(A,B,Q,R,N,horizon)
         
@@ -80,13 +80,16 @@ class Automatic_Control_Environment(gym.Env):
 
     def step(self, action):
         action = np.expand_dims(action,axis=1)
+        action = np.clip(action,-self.high,self.high)
         next_state = self.state_space_equation(action)
-        done = self.done()
+        next_state = np.clip(next_state,-self.high,self.high)
         self.state = next_state
-        self.action = action                                                                                                                             
+        self.action = action         
+                                                                                                                       
         next_Y = self.new_obs()
         self.Y = next_Y
         reward = self.reward()
+        self.reward_now = reward
         self.nbr_steps += 1
 
         next_Y = np.squeeze(next_Y,axis=1)
@@ -94,8 +97,9 @@ class Automatic_Control_Environment(gym.Env):
         #next_state = next_state.squeeze()
         #next_state = next_state.astype('float32')
         _ = self.get_debug_dict()
+        done = self.done()     
         #next_Y = np.clip(-self.high,self.high,next_Y)
-        return next_Y, reward, done, _
+        return next_Y, self.reward_now, done, _
 
     def get_debug_dict(self):
         return dict()
@@ -148,6 +152,9 @@ class Automatic_Control_Environment(gym.Env):
     def done(self):
         if self.nbr_steps == self.rollout_steps:
             return True
+        elif np.max(np.abs(self.state)) >= self.high or np.max(np.abs(self.action)) >= self.high:
+            self.reward_now = self.reward_now + -200+200*self.nbr_steps/self.rollout_steps
+            return True
         #elif np.max(self.state) > self.high
         else:
             return False
@@ -187,6 +194,8 @@ if __name__ == "__main__":
     print("rew")
     print(reward.shape)
     print(done)
+    action = np.array([4,4,0.1])
+    next_state, reward, done, _ = ac_env.step(action)
     next_state, reward, done, _ = ac_env.step(action)
     print("new state")
     print(next_state)

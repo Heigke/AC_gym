@@ -153,9 +153,9 @@ class Automatic_Control_Environment(gym.Env):
     def done(self):
         if self.nbr_steps == self.rollout_steps:
             return True
-        elif np.max(np.abs(self.state)) >= self.high or np.max(np.abs(self.action)) >= self.high:
-            self.reward_now = self.reward_now + -200+200*self.nbr_steps/self.rollout_steps
-            return True
+        #elif np.max(np.abs(self.state)) >= self.high or np.max(np.abs(self.action)) >= self.high:
+        #    self.reward_now = self.reward_now + -200+200*self.nbr_steps/self.rollout_steps
+        #    return True
         #elif np.max(self.state) > self.high
         else:
             return False

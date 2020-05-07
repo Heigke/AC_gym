@@ -84,9 +84,9 @@ class Automatic_Control_Environment(gym.Env):
 
     def step(self, action):
         action = np.expand_dims(action,axis=1)
-        action = np.clip(action,-self.high,self.high)
+        #action = np.clip(action,-self.high,self.high)
         next_state = self.state_space_equation(action)
-        next_state = np.clip(next_state,-self.high,self.high)
+        #next_state = np.clip(next_state,-self.high,self.high)
         self.state = next_state
         self.action = action         
                                                                                                                        

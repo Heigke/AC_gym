@@ -8,17 +8,18 @@ from scipy.linalg import expm
 """
 Settings for linear quadratic regulator
 """
-A_rand = np.random.randn(100,100)
+A_rand = np.random.randn(2,2)
 A_rand_T = np.transpose(A_rand)
-A2 = expm(A_rand-A_rand_T)    
+A2 = expm(A_rand-A_rand_T) 
+
 #A2 = np.eye(32)
-B2 = np.eye(100)
+B2 = np.eye(2)
 C2 = B2
 Q2 = B2
 R2 = B2
 N2 = 0*B2
 #initial_value2 = np.array([[1],[1],[1],[1]])
-initial_value2 = np.ones((100,1))
+initial_value2 = np.ones((2,1))
 reset_rnd2 = True
 nonlin_lambda2 = lambda x: 0.0*np.sin(x)
 class Automatic_Control_Environment(gym.Env):

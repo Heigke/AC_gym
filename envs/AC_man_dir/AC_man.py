@@ -1,6 +1,6 @@
 import numpy as np
 from gym import spaces
-#import optimal_lqr_control
+import optimal_lqr_control
 #from stable_baselines.common.env_checker import check_env
 import gym
 import sys
@@ -22,6 +22,7 @@ N2 = 0*B2
 initial_value2 = np.ones((2,1))
 reset_rnd2 = True
 nonlin_lambda2 = lambda x: 0.0*np.sin(x)
+horizon2 = 20
 class Automatic_Control_Environment(gym.Env):
     """ ***A simple automatic control environment***
     by Niklas Kotarsky and Eric Bergvall
@@ -35,7 +36,7 @@ class Automatic_Control_Environment(gym.Env):
 
 
     metadata = {'render.modes': ['human']}
-    def __init__(self,A=A2,B=B2,C=C2,Q=Q2,R=R2,N=N2,initial_value=initial_value2, reset_rnd = reset_rnd2, nonlin_lambda = nonlin_lambda2, noise_matrix=0,horizon=100):         
+    def __init__(self,A=A2,B=B2,C=C2,Q=Q2,R=R2,N=N2,initial_value=initial_value2, reset_rnd = reset_rnd2, nonlin_lambda = nonlin_lambda2, noise_matrix=0,horizon=horizon2):         
         super(Automatic_Control_Environment, self).__init__()
         self.A = A
         self.B = B
@@ -63,7 +64,7 @@ class Automatic_Control_Environment(gym.Env):
 
         self.reward_now = 0
         self.rollout_steps = 19
-#        self.lqr_optimal = optimal_lqr_control.Lqr(A,B,Q,R,N,horizon)
+        self.lqr_optimal = optimal_lqr_control.Lqr(A,B,Q,R,N,horizon)
         
     def state_space_equation(self, action):
         noise = np.random.normal(0,1,self.state.shape)
@@ -71,6 +72,11 @@ class Automatic_Control_Environment(gym.Env):
         new_state = self.A@self.state+self.B@action+self.nonlin_term(self.state)+self.noise_matrix*noise
 
         return new_state
+
+    def optimal_step(self, state):
+        optimal_action = self.lqr_optimal.action(state)
+        
+        return optimal_action
 
     def new_obs(self):
         noise = np.random.normal(0,1,self.Y.shape)
@@ -135,8 +141,8 @@ class Automatic_Control_Environment(gym.Env):
         self.Y = self.new_obs()
         self.action = self.initial_action
         self.nbr_steps = 0
-#        self.lqr_optimal.reset()                                                                                                                               
-#        self.lqr_optimal.reset()
+        self.lqr_optimal.reset()                                                                                                                               
+
         squeezed_obs = np.squeeze(self.Y,axis=1)
         return squeezed_obs
 
@@ -191,9 +197,9 @@ if __name__ == "__main__":
     print("obs space: "+str(ac_env.observation_space.shape))
     print("act space: "+str(ac_env.action_space.shape))
     state = ac_env.reset()
-    #optimal_action = ac_env.opt_action()
+    optimal_action = ac_env.optimal_action(state)
     action = np.array([0.1,0.1,0.1])
-    next_state, reward, done, _ = ac_env.step(action)
+    next_state, reward, done, _ = ac_env.step(optimal_action)
     print("new state")
     print(next_state)
     print("rew")

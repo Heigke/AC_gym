@@ -10,8 +10,9 @@ Settings for linear quadratic regulator
 """
 A_rand = np.random.randn(2,2)
 A_rand_T = np.transpose(A_rand)
-A2 = expm(A_rand-A_rand_T) 
-
+#A2 = expm(A_rand-A_rand_T) 
+A2 = np.array([[-0.33629175, -0.94175785],
+       [ 0.94175785, -0.33629175]])
 #A2 = np.eye(32)
 B2 = np.eye(2)
 C2 = B2
@@ -194,12 +195,19 @@ if __name__ == "__main__":
     # N = np.array([[0]])
     # initial_value = np.array([[0.8]])
     ac_env = Automatic_Control_Environment()
+    lqr = optimal_lqr_control.Lqr(A2,B2,Q2,R2,N2,20)
     print("obs space: "+str(ac_env.observation_space.shape))
     print("act space: "+str(ac_env.action_space.shape))
     state = ac_env.reset()
-    optimal_action = ac_env.optimal_step(state)
-    action = np.array([0.1,0.1,0.1])
-    next_state, reward, done, _ = ac_env.step(action)
+    s = []
+    a = []
+    s.append(state)
+    for i in range(20):
+        optimal_action = lqr.action(state)
+        state, reward, done, _ = ac_env.step(optimal_action)
+        s.append(state)
+        a.append(optimal_action)
+    
     print("new state")
     print(next_state)
     print("rew")

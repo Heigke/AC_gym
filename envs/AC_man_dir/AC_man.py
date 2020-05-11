@@ -64,7 +64,7 @@ class Automatic_Control_Environment(gym.Env):
         self.nonlin_term = nonlin_lambda
 
         self.reward_now = 0
-        self.rollout_steps = 19
+        self.rollout_steps = 20
         #self.lqr_optimal = optimal_lqr_control.Lqr(A,B,Q,R,N,horizon)
         
     def state_space_equation(self, action):

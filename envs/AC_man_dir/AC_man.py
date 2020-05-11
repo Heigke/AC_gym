@@ -21,7 +21,7 @@ R2 = B2
 N2 = 0*B2
 #initial_value2 = np.array([[1],[1],[1],[1]])
 initial_value2 = np.ones((2,1))
-reset_rnd2 = True
+reset_rnd2 = False
 nonlin_lambda2 = lambda x: 0.0*np.sin(x)
 horizon2 = 20
 class Automatic_Control_Environment(gym.Env):

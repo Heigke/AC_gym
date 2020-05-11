@@ -21,7 +21,7 @@ R2 = B2
 N2 = 0*B2
 #initial_value2 = np.array([[1],[1],[1],[1]])
 initial_value2 = np.ones((2,1))
-reset_rnd2 = True
+reset_rnd2 = False
 nonlin_lambda2 = lambda x: 0.0*np.sin(x)
 horizon2 = 20
 class Automatic_Control_Environment(gym.Env):
@@ -64,7 +64,7 @@ class Automatic_Control_Environment(gym.Env):
         self.nonlin_term = nonlin_lambda
 
         self.reward_now = 0
-        self.rollout_steps = 20
+        self.rollout_steps = 19
         #self.lqr_optimal = optimal_lqr_control.Lqr(A,B,Q,R,N,horizon)
         
     def state_space_equation(self, action):
@@ -109,6 +109,7 @@ class Automatic_Control_Environment(gym.Env):
         #next_state = next_state.squeeze()
         #next_state = next_state.astype('float32')
         _ = self.get_debug_dict()
+        
         done = self.done()    
         self.nbr_steps += 1 
         #next_Y = np.clip(-self.high,self.high,next_Y)
@@ -208,27 +209,9 @@ if __name__ == "__main__":
         state, reward, done, _ = ac_env.step(optimal_action)
         s.append(state)
         a.append(optimal_action)
+        if i == 19:
+            print("s")
        
     
-    plt.figure()
-    plt.plot(s)
-    plt.show()
-    print("new state")
-    print(next_state)
-    print("rew")
-    print(reward.shape)
-    print(done)
-    action = np.array([4,4,0.1])
-    next_state, reward, done, _ = ac_env.step(action)
-    next_state, reward, done, _ = ac_env.step(action)
-    print("new state")
-    print(next_state)
-    print("rew")
-    print(reward)
-    print(done)
-    print(state)
-    print(next_state.dtype)
-    print(ac_env.observation_space.dtype)
-    #check_env(ac_env, warn=True)
-    print(ac_env.observable())
-    #ac_env.opt_action()                
+  
+         

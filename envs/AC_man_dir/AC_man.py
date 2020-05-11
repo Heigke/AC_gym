@@ -102,14 +102,15 @@ class Automatic_Control_Environment(gym.Env):
         self.Y = next_Y
         reward = self.reward()
         self.reward_now = reward
-        self.nbr_steps += 1
+        
 
         next_Y = np.squeeze(next_Y,axis=1)
         next_Y = next_Y.astype('float32')
         #next_state = next_state.squeeze()
         #next_state = next_state.astype('float32')
         _ = self.get_debug_dict()
-        done = self.done()     
+        done = self.done()    
+        self.nbr_steps += 1 
         #next_Y = np.clip(-self.high,self.high,next_Y)
         return next_Y, self.reward_now, done, _
 

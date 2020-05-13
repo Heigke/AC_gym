@@ -11,16 +11,19 @@ Settings for linear quadratic regulator
 A_rand = np.random.randn(2,2)
 A_rand_T = np.transpose(A_rand)
 #A2 = expm(A_rand-A_rand_T) 
-A2 = np.array([[-0.33629175, -0.94175785],
-       [ 0.94175785, -0.33629175]])
+#A2 = np.array([[-0.33629175, -0.94175785],
+#       [ 0.94175785, -0.33629175]])
+A2 = np.array([[-0.91710299, -0.36991407,  0.14861251],
+       [ 0.19090147, -0.73478173, -0.65088589],
+       [ 0.34996961, -0.56855905,  0.74448766]])
 #A2 = np.eye(32)
-B2 = np.eye(2)
+B2 = np.eye(3)
 C2 = B2
 Q2 = B2
 R2 = B2
 N2 = 0*B2
 #initial_value2 = np.array([[1],[1],[1],[1]])
-initial_value2 = np.ones((2,1))
+initial_value2 = np.ones((3,1))
 reset_rnd2 = False
 nonlin_lambda2 = lambda x: 0.0*np.sin(x)
 horizon2 = 20
